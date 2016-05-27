@@ -6,7 +6,7 @@ import java.util.List;
 /* Кроссворд
 1. Дан двумерный массив, который содержит буквы английского алфавита в нижнем регистре.
 2. Метод detectAllWords должен найти все слова из words в массиве crossword.
-3. Элемент(startX, startY) должен соответствовать первой букве слова, элемент(endX, endY) - последней.
+3. Элемент(startX, startY) должен соответствовать первой букве слова, элемент(endX, endX) - последней.
 text - это само слово, располагается между начальным и конечным элементами
 4. Все слова есть в массиве.
 5. Слова могут быть расположены горизонтально, вертикально и по диагонали как в нормальном, так и в обратном порядке.
@@ -16,129 +16,166 @@ public class Solution {
     public static void main(String[] args) {
         int[][] crossword = new int[][]{
                 {'f', 'd', 'e', 'r', 'l', 'k'},
-                {'u', 's', 'a', 'm', 'e', 'o'},
-                {'l', 'n', 'g', 'r', 'o', 'v'},
-                {'m', 'l', 'p', 'r', 'r', 'h'},
-                {'p', 'o', 'e', 'e', 'j', 'j'}
+                {'u', 's', 'a', 'm', 'e', 'b'},
+                {'y', 'n', 'g', 'r', 'o', 'v'},
+                {'x', 'l', 'p', 'r', 'r', 'h'},
+                {'p', 'o', 'z', 'e', 'j', 'j'}
         };
-        List<Word> list = detectAllWords(crossword, "home", "same", "rrp", "lmp", "pml", "mgl", "roo", "oor", "anm");
-        for (Word word:list) {
-            System.out.println(word.toString());
-        }
+        detectAllWords(crossword, "home", "same", "dsnl", "rek");
         /*
 Ожидаемый результат
 home - (5, 3) - (2, 0)
 same - (1, 1) - (4, 1)
          */
     }
+    public static List<Word> detectAllWords(int[][] crossword, String... words)
+    {
 
-    public static List<Word> detectAllWords(int[][] crossword, String... words) {
-        StringBuilder sb = new StringBuilder();
-        List<Word> list = new ArrayList<>();
+        ArrayList<Word> result = new ArrayList<>();
+        int hor = crossword[0].length;
+        int ver = crossword.length;
 
-
-//        Find horizontals
-        for (int i = 0; i < crossword.length; i++)
+        outer: for (String s : words)
         {
-            for (int j = 0; j < crossword[i].length; j++)
+//            hor
+            for (int i = 0; i < ver; i++)
             {
-                sb.append(Character.valueOf((char) crossword[i][j]));
-                if (j == crossword[i].length-1) {
-                    for (int k = 0; k < words.length; k++)
+                StringBuilder sb = new StringBuilder();
+                for (int j = 0; j < hor; j++)
+                    sb.append((char) crossword[i][j]);
+
+                String horLine = sb.toString();
+                if (horLine.contains(s))
+                {
+                    Word word = new Word(s);
+                    word.setStartPoint(horLine.indexOf(s), i);
+                    word.setEndPoint(horLine.indexOf(s) + s.length() - 1, i);
+
+                    result.add(word);
+                    continue outer;
+                }
+                String horReverse = sb.reverse().toString();
+                if (horReverse.contains(s))
+                {
+                    Word word = new Word(s);
+                    word.setStartPoint(hor - horReverse.indexOf(s) - 1, i);
+                    word.setEndPoint(hor - horReverse.indexOf(s) - s.length(), i);
+
+                    result.add(word);
+                    continue outer;
+                }
+            }
+
+//            vert
+            for (int i = 0; i < hor; i++)
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int[] aCrossword : crossword)
+                    sb.append((char) aCrossword[i]);
+
+                String horLine = sb.toString();
+                if (horLine.contains(s))
+                {
+                    Word word = new Word(s);
+                    word.setStartPoint(i, horLine.indexOf(s));
+                    word.setEndPoint(i, horLine.indexOf(s) + s.length() - 1);
+
+                    result.add(word);
+                    continue outer;
+                }
+                String horReverse = sb.reverse().toString();
+                if (horReverse.contains(s))
+                {
+                    Word word = new Word(s);
+                    word.setStartPoint(i, ver - horReverse.indexOf(s) - 1);
+                    word.setEndPoint(i, ver - s.length() - horReverse.indexOf(s));
+
+                    result.add(word);
+                    continue outer;
+                }
+            }
+
+
+//            diag
+            for (int i = 0; i < ver; i++)
+            {
+                for (int j = 0; j < hor; j++)
+                {
+                    int iTemp = i;
+                    int jTemp = j;
+                    StringBuilder sb = new StringBuilder();
+                    while (iTemp < ver && jTemp < hor)
                     {
-                        String reverse = sb.reverse().toString();
-                        if (sb.toString().contains(words[k])) {
-                            Word word = new Word(words[k]);
-                            word.setStartPoint(sb.toString().indexOf(words[k]), i);
-                            word.setEndPoint(sb.toString().lastIndexOf(words[k]), i);
-
-                            list.add(word);
-                        }
-                        if (reverse.contains(words[k])) {
-                            Word word = new Word(words[k]);
-                            word.setStartPoint(sb.toString().indexOf(words[k]), i);
-                            word.setEndPoint(sb.substring(sb.indexOf(words[k])).indexOf(words[k].charAt(words[k].length()-1))+1, i);
-
-                            list.add(word);
-                        }
-                        sb.reverse();
+                        sb.append((char) crossword[iTemp][jTemp]);
+                        iTemp++;
+                        jTemp++;
                     }
-                    sb.delete(0,sb.length());
+                    String horLine = sb.toString();
+                    if (horLine.contains(s))
+                    {
+                        Word word = new Word(s);
+                        word.setStartPoint(j + horLine.indexOf(s), i + horLine.indexOf(s));
+                        word.setEndPoint(j + horLine.indexOf(s) + s.length() - 1, i + horLine.indexOf(s) + s.length() - 1);
+
+                        result.add(word);
+                        continue outer;
+                    }
+                    String horReverse = sb.reverse().toString();
+                    if (horReverse.contains(s))
+                    {
+                        Word word = new Word(s);
+                        word.setStartPoint(jTemp - 1 - horReverse.indexOf(s), iTemp - 1 - horReverse.indexOf(s));
+                        word.setEndPoint(jTemp  - horReverse.indexOf(s) - s.length(), iTemp  - horReverse.indexOf(s) - s.length());
+
+                        result.add(word);
+                        continue outer;
+                    }
+                }
+            }
+
+
+            for (int i = 0; i < ver; i++)
+            {
+                for (int j = hor - 1; j >= 0; j--)
+                {
+                    int iTemp = i;
+                    int jTemp = j;
+                    StringBuilder sb = new StringBuilder();
+                    while (iTemp < ver && jTemp >= 0)
+                    {
+                        sb.append((char) crossword[iTemp][jTemp]);
+                        iTemp++;
+                        jTemp--;
+                    }
+
+                    String horLine = sb.toString();
+                    if (horLine.contains(s))
+                    {
+                        Word word = new Word(s);
+                        word.setStartPoint(j - horLine.indexOf(s), i + horLine.indexOf(s));
+                        word.setEndPoint(j - horLine.indexOf(s) - s.length() + 1, i + horLine.indexOf(s) + s.length() - 1);
+
+                        result.add(word);
+                        continue outer;
+                    }
+                    String horReverse = sb.reverse().toString();
+                    if (horReverse.contains(s))
+                    {
+                        Word word = new Word(s);
+                        word.setStartPoint(jTemp + 1 + horReverse.indexOf(s), iTemp - 1 - horReverse.indexOf(s));
+                        word.setEndPoint(jTemp  + horReverse.indexOf(s) + s.length(), iTemp  - horReverse.indexOf(s) - s.length());
+
+                        result.add(word);
+                        continue outer;
+                    }
                 }
             }
         }
+        System.out.println(result);
 
-//        Find verticals
-        for (int i = 0; i < crossword[0].length; i++)
-        {
-            for (int j = 0; j < crossword.length; j++)
-            {
-                sb.append(Character.valueOf((char) crossword[j][i]));
-                if (i == crossword.length-1) {
-                    for (int k = 0; k < words.length; k++)
-                    {
-                        if (sb.toString().contains(words[k])) {
-                            Word word = new Word(words[k]);
-                            word.setStartPoint(i, sb.toString().indexOf(words[k]));
-                            word.setEndPoint(i, sb.toString().lastIndexOf(words[k]));
-
-                            list.add(word);
-                        }
-                        if (sb.reverse().toString().contains(words[k])) {
-                            Word word = new Word(words[k]);
-                            word.setStartPoint(i, sb.toString().indexOf(words[k]));
-                            word.setEndPoint(i, sb.toString().lastIndexOf(words[k]));
-
-                            list.add(word);
-                        }
-                    }
-                    sb.delete(0,sb.length());
-                }
-            }
-        }
-
-        sb.delete(0, sb.length());
-
-//        Find diagonals - to be done
-
-        for(int i=0; i<crossword.length; i++)
-            for(int j=0; j<=i; j++) {
-                sb.append(Character.valueOf((char) crossword[i-j][j]));
-                if (j == i) {
-                    for (int k = 0; k < words.length; k++)
-                    {
-                        if (sb.toString().contains(words[k])) {
-                            System.out.println(words[k]);
-                        }
-                        if (sb.reverse().toString().contains(words[k])) {
-                            System.out.println(words[k]);
-                        }
-                    }
-                    sb.delete(0,sb.length());
-                }
-            }
-
-        for(int i=1; i<crossword[0].length; i++)
-            for(int j=i; j<crossword[0].length; j++) {
-                sb.append(Character.valueOf((char) crossword[crossword.length-j+i-1][j]));
-                if (j == i) {
-                    for (int k = 0; k < words.length; k++)
-                    {
-                        if (sb.toString().contains(words[k])) {
-                            System.out.println(words[k]);
-                        }
-                        if (sb.reverse().toString().contains(words[k])) {
-                            System.out.println(words[k]);
-                        }
-                    }
-                    sb.delete(0,sb.length());
-                }
-            }
-
-//        Find diagonals to other side - to be done!!!
-
-        return list;
+        return result;
     }
+
 
     public static class Word {
         private String text;
